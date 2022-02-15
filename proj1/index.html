@@ -6,10 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS184 Rasterizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Source+Code+Pro&display=swap" rel="stylesheet">
 </head>
 
 <style>
     body {
+        font-family: 'Montserrat', sans-serif;
         display: flex;
         width: 100%;
         height: 100%;
@@ -28,7 +32,7 @@
     
     img {
         max-width: 80%;
-        min-width: 100px;
+        min-width: 150px;
     }
     
     p {}
@@ -36,16 +40,16 @@
     .wrapper {
         width: 80%;
         max-width: 700px;
-        padding: 50px 100px 50px 100px;
+        padding: 75px 100px 50px 100px;
         background-color: white;
     }
     
     .img-grid {
-        width: 80%;
+        width: 100%;
         margin-top: 100px;
         display: flex;
         justify-content: space-between;
-        flex-wrap: wrap;
+        /* flex-wrap: wrap; */
     }
 </style>
 
@@ -173,19 +177,19 @@
         <div class="img-grid">
             <figure>
                 <img src="Img/Task6-L0PN.png" alt="Task 6 Level 0 Nearest Pixel Filtering">
-                <figcaption>Level 0 Nearest Pixel Filtering</figcaption>
+                <figcaption>0 Nearest Pixel Filtering</figcaption>
             </figure>
             <figure>
                 <img src="Img/Task6-L0PL.png" alt="Task 6 Level 0 Linear Pixel Filtering">
-                <figcaption>Task 6 Level 0 Linear Pixel Filtering</figcaption>
+                <figcaption>Level 0 Linear Pixel Filtering</figcaption>
             </figure>
             <figure>
                 <img src="Img/Task6-LNPN.png" alt="Task 6 Nearest Level Nearest Pixel Filtering">
-                <figcaption>Task 6 Nearest Level Nearest Pixel Filtering</figcaption>
+                <figcaption>6 Nearest Level Nearest Pixel Filtering</figcaption>
             </figure>
             <figure>
                 <img src="Img/Task6-LNPL.png" alt="Task 6 Nearest Level Linear Pixel Filtering">
-                <figcaption>Task 6 Nearest Level Linear Pixel Filtering</figcaption>
+                <figcaption>6 Nearest Level Linear Pixel Filtering</figcaption>
             </figure>
         </div>
     </div>
