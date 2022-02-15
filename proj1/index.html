@@ -25,9 +25,13 @@
     }
     
     figure {
-        width: 100%;
+        width: fit-content;
         margin: 0 auto;
         margin-bottom: 100px;
+        /* display: inline-block; */
+        /* display: flex; */
+        /* flex-direction: column;
+        align-items: center; */
     }
     
     img {
@@ -35,7 +39,10 @@
         min-width: 150px;
     }
     
-    p {}
+    figcaption {
+        font-size: smaller;
+        /* align-self: flex-start; */
+    }
     
     .wrapper {
         width: 80%;
@@ -51,6 +58,10 @@
         justify-content: space-between;
         /* flex-wrap: wrap; */
     }
+    
+    .code {
+        font-family: 'Source Code Pro', monospace;
+    }
 </style>
 
 <body>
@@ -59,15 +70,15 @@
         <h4>By Team Lucies (Lucy Lou and Lucy Wan)</h4>
         <br>
         <h2>Overview</h2>
-        <p>In this project, we rasterized triangles from three given vertice points and a color. We started off simple with sampling per pixel, then moved on to implement supersampling and texture filtering on pixels and mipmap levels. We also wrote functions
-            to support transforms and color gradients. It was interesting seeing the drastic difference going from single pixel sampling to texture filtering, and being able to switch between the two easily. It was also interesting to realize that color
-            gradients can be formed from triangles with interpolation of the colors.</p>
+        <p>In this project, we rasterized triangles from three given vertice points and different colors. We started off simple with sampling per pixel, then moved on to implement supersampling and texture filtering on pixels and mipmap levels. We also wrote
+            functions to support transforms and color gradients. It was interesting seeing the drastic difference going from single pixel sampling to texture filtering, and being able to switch between the two easily. It was also interesting to realize
+            that color gradients can be formed from triangles with interpolation of the colors.</p>
         <br>
         <h2>Task 1: Drawing Single-Color Triangles</h2>
         <p>In this first task, we are given the 3 points of the triangle. We found the minimum X, maximum X, minimum Y, and maximum Y values from these points and took the floor of the minimums and the ceiling of the maximums so they were rounded to integers
-            that could form a rectangle we can loop through. We then had a double for loop, starting from minX+0.5 and minY+0.5 and incrementing by 1 pixel because we wanted to check if the center of the coordinate was in the triangle. Inside that double
-            for loop we called the function inside from Triangulation.cpp to check if the current x and y coordinate our loop was on was inside the triangle. If it was, we called fill_pixel with those x y values and the given color. Last we updated the
-            Triangulation inside function to support different directions of vertices ordering by including that not only if the cross product signs were both positive but also if they were all negative, the point is inside the triangle.
+            that could form a rectangle we can loop through. We then had a double for loop, starting from <span class="code">minX+0.5</span> and <span class="code">minY+0.5</span> and incrementing by 1 pixel because we wanted to check if the center of
+            the coordinate was in the triangle. Inside that double for loop we called the function inside from Triangulation.cpp to check if the current x and y coordinate our loop was on was inside the triangle. If it was, we called <span class="code">fill_pixel</span>            with those x y values and the given color. Last we updated the Triangulation <span class="code">inside</span> function to support different directions of vertices ordering by including that not only if the cross product signs were both positive
+            but also if they were all negative, the point is inside the triangle.
         </p>
         <p>Here is an example of rasterized triangles. Since we are sampling at 1 pixel, the boundaries are very sharp with jaggies. In fact, as shown with the pixel inspector, on the very skinny red triangle, the tip isn’t even connected.
         </p>
@@ -78,11 +89,10 @@
             </figure>
         </div>
         <h2>Task 2: Antialiasing by Supersampling</h2>
-        <p>To implement supersampling, we similarly loop through the triangle bounding box, but now we also double for loop inside each individual pixel as well to sample fractions of the pixel. We start at an offset of ½*sqrt(sample_rate) and increment
-            by 1/sqrt(sample_rate) both in the x and y directions. We check if the area sampled is inside the triangle and if so we store the color value in our sample buffer at the correct index. Our sample buffer is the size of the screen multiplied
-            by our sample rate so that it can store the sample rate amount of color data per pixel. After all the values are stored in the sample buffer, we resolve these values to the framebuffer. We need to take the averages of the colors we got from
-            each fractional pixel sample and use that average value as the value to display for that pixel. We loop through in the same way as before and find the average color for each pixel and set the RGB channels in the framebuffer accordingly. Lastly,
-            we updated our fill pixel function to be up to date for the sample buffer size.</p>
+        <p>To implement supersampling, we similarly loop through the triangle bounding box, but now we also double for loop inside each individual pixel as well to sample fractions of the pixel. We start at an offset of <span class="code">½*sqrt(sample_rate)</span>            and increment by <span class="code">1/sqrt(sample_rate)</span> both in the x and y directions. We check if the area sampled is inside the triangle and if so we store the color value in our sample buffer at the correct index. Our sample buffer
+            is the size of the screen multiplied by our sample rate so that it can store the sample rate amount of color data per pixel. After all the values are stored in the sample buffer, we resolve these values to the framebuffer. We need to take
+            the averages of the colors we got from each fractional pixel sample and use that average value as the value to display for that pixel. We loop through in the same way as before and find the average color for each pixel and set the RGB channels
+            in the framebuffer accordingly. Lastly, we updated our fill pixel function to be up to date for the sample buffer size.</p>
         <p>Super sampling is useful because it decreases the sharp jaggies found in images that have edges that aren’t straight horizontal or vertical. It creates a smoother edge with the averaging. For example, zooming in on non-supersampled triangles with
             the edges that go diagonally, there is a staircase effect. By super sampling, that edge becomes smoother with less triangle color because at the edge, certain fractional areas of the pixel aren't inside the triangle. The same benefits triangles
             that are very skinny.</p>
