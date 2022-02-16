@@ -67,12 +67,18 @@
         <h4>By Team Lucies (Lucy Lou and Lucy Wan)</h4>
         <br>
         <h2>Overview</h2>
-        <p>In this project, we rasterized triangles from three given vertice points and different colors. We started off simple with sampling per pixel, then moved on to implement supersampling and texture filtering on pixels and mipmap levels. We also wrote functions to support transforms and color gradients. It was interesting seeing the drastic difference going from single pixel sampling to texture filtering, and being able to switch between the two easily. It was also interesting to realize that color gradients can be formed from triangles with interpolation of the colors.
+        <p>In this project, we rasterized triangles from three given vertice points and different colors. We started off simple with sampling per pixel, then moved on to implement supersampling and texture filtering on pixels and mipmap levels. We also wrote
+            functions to support transforms and color gradients. It was interesting seeing the drastic difference going from single pixel sampling to texture filtering, and being able to switch between the two easily. It was also interesting to realize
+            that color gradients can be formed from triangles with interpolation of the colors.
 
         </p>
         <br>
         <h2>Task 1: Drawing Single-Color Triangles</h2>
-        <p>In this first task, we are given the 3 points of the triangle. We found the minimum X, maximum X, minimum Y, and maximum Y values from these points and took the floor of the minimums and the ceiling of the maximums so they were rounded to integers that could form a rectangle we can loop through. We then had a double for loop, starting from <span class="code">minX+0.5</span> and <span class="code">minY+0.5</span> and incrementing by 1 pixel because we wanted to check if the center of the coordinate was in the triangle. Inside that double for loop we called the function <span class="code">inside</span> from <span class="code">triangulation.cpp</span> to check if the current x and y coordinate our loop was on was inside the triangle. If it was, we called <span class="code">fill_pixel()</span> with those x y values and the given color. Lastly, we updated the <span class="code">inside</span> function in  <span class="code">triangulation.cpp</span> to support different vertex input orderings by including that if all the cross product signs were negative, the point is inside the triangle (before only the case where all the cross product signs were positive was accounted for).
+        <p>In this first task, we are given the 3 points of the triangle. We found the minimum X, maximum X, minimum Y, and maximum Y values from these points and took the floor of the minimums and the ceiling of the maximums so they were rounded to integers
+            that could form a rectangle we can loop through. We then had a double for loop, starting from <span class="code">minX+0.5</span> and <span class="code">minY+0.5</span> and incrementing by 1 pixel because we wanted to check if the center of
+            the coordinate was in the triangle. Inside that double for loop we called the function <span class="code">inside</span> from <span class="code">triangulation.cpp</span> to check if the current x and y coordinate our loop was on was inside
+            the triangle. If it was, we called <span class="code">fill_pixel()</span> with those x y values and the given color. Lastly, we updated the <span class="code">inside</span> function in <span class="code">triangulation.cpp</span> to support
+            different vertex input orderings by including that if all the cross product signs were negative, the point is inside the triangle (before only the case where all the cross product signs were positive was accounted for).
         </p>
         <p>We used a bounding box for our algorithm, but even if we hadn’t used a bounding box, it would have been no worse in terms of image quality since both methods lead to the same image. Bounding box only reduces redundancy in terms of calculations
             which in turn makes our application faster.
@@ -87,7 +93,12 @@
             </figure>
         </div>
         <h2>Task 2: Antialiasing by Supersampling</h2>
-        <p>To implement supersampling, similarly to task 1, we used the same two data structures as Task 1, the sample buffer (for storing sampled values) and the frame buffer (for storing pixels to be displayed). We also loop through the triangle bounding box to account for every point in the triangle. However,now we also add a double for loop to loop through the subsamples within each pixel. We start at an offset of <span class="code">½*sqrt(sample_rate)</span> and increment by <span class="code">1/sqrt(sample_rate)</span> both in the x and y directions to iterate through each subsample. We check if the area sampled is inside the triangle and if so we store the color value in our sample buffer at the correct index, which we calculate by using a counter variable. Our sample buffer is the size of the screen multiplied by our sample rate  to account for the extra samples for each pixel. After all the values are stored in the sample buffer, we resolve these values to the framebuffer by taking the averages of the colors we get from each pixel and  storing that value in its respective location within the frame buffer. Since the frame buffer stores colors differently from the sample buffer, we had to remember to convert between Color objects and RGB channels in this step. Lastly, we updated our <span class="code">fill_pixel()</span> function to account for the increased sample buffer size  by filling in <span class="code">sample_rate</span> amount of values within the sample buffer per pixel (instead of one value per pixel as in Task 1).
+        <p>To implement supersampling, similarly to task 1, we used the same two data structures as Task 1, the sample buffer (for storing sampled values) and the frame buffer (for storing pixels to be displayed). We also loop through the triangle bounding
+            box to account for every point in the triangle. However,now we also add a double for loop to loop through the subsamples within each pixel. We start at an offset of <span class="code">½*sqrt(sample_rate)</span> and increment by <span class="code">1/sqrt(sample_rate)</span>            both in the x and y directions to iterate through each subsample. We check if the area sampled is inside the triangle and if so we store the color value in our sample buffer at the correct index, which we calculate by using a counter variable.
+            Our sample buffer is the size of the screen multiplied by our sample rate to account for the extra samples for each pixel. After all the values are stored in the sample buffer, we resolve these values to the framebuffer by taking the averages
+            of the colors we get from each pixel and storing that value in its respective location within the frame buffer. Since the frame buffer stores colors differently from the sample buffer, we had to remember to convert between Color objects and
+            RGB channels in this step. Lastly, we updated our <span class="code">fill_pixel()</span> function to account for the increased sample buffer size by filling in <span class="code">sample_rate</span> amount of values within the sample buffer
+            per pixel (instead of one value per pixel as in Task 1).
         </p>
         <p>Super sampling is useful because it antialiases by decreasing the amount of sharp jaggies found in images. It creates smoother edges by averaging multiple values within a pixel to make the image more blurred rather than sharp. For example, zooming
             in on non-supersampled triangles with the edges that go diagonally, there is a staircase effect. The same benefits triangles that are very skinny.
@@ -208,7 +219,10 @@
             parts of the image further back to be more blurred. We implemented level sampling by calculating the barycentric coordinates of (x, y), (x, y+1), and (x+1, y) and find their corresponding coordinates on the texture map. We used these values
             to find our difference vectors du/dx and dv/dy, which we then use to find the level as a float using the equations to find the level as shown in lecture. If our level sampling method is “nearest,” we round this value, and if it is “linear,”
             we interpolate this value with the colors of the two adjacent levels closest to our float.</p>
-        <p>Compared to the other two ways of antialiasing, level sampling is likely the slowest since in addition to its own code it calls pixel sampling (depending on what sample_rate within supersampling you are comparing it to). It also uses more memory than pixel sampling as it uses a struct to store dx/uv, dy/uv, and uv. Within pixel sampling, bilinear pixel sampling is slightly more costly than nearest pixel sampling since there are many more calculations involved. However, bilinear pixel sampling produces excellent results. Number of samples per pixel is the most straightforward with minimal calculations, but slow performance as it’s “enlarging” the picture multiple times to achieve the antialiasing. All three antialias well, and the choice of which one depends on the picture.</p>
+        <p>Compared to the other two ways of antialiasing, level sampling is likely the slowest since in addition to its own code it calls pixel sampling (depending on what sample_rate within supersampling you are comparing it to). It also uses more memory
+            than pixel sampling as it uses a struct to store dx/uv, dy/uv, and uv. Within pixel sampling, bilinear pixel sampling is slightly more costly than nearest pixel sampling since there are many more calculations involved. However, bilinear pixel
+            sampling produces excellent results. Number of samples per pixel is the most straightforward with minimal calculations, but slow performance as it’s “enlarging” the picture multiple times to achieve the antialiasing. All three antialias well,
+            and the choice of which one depends on the picture.</p>
         <p>Comparing the combinations of these forms of sampling, we see when both are used together we get the smoothes image, but it may even seem blurry. Level zero and pixel linear looks a little jaggedy still. Level zero with nearest pixel sampling
             looks similar to linear pixel sampling, but linear is slightly smoother.</p>
         <div class="img-grid">
@@ -222,7 +236,7 @@
             </figure>
             <figure>
                 <img src="Img/Task6-LNPN.png" alt="Task 6 Nearest Level Nearest Pixel Filtering">
-                <figcapion>6 Nearest Level Nearest Pixel Filtering</figcaption>
+                <figcaption>Nearest Level Nearest Pixel Filtering</figcaption>
             </figure>
             <figure>
                 <img src="Img/Task6-LNPL.png" alt="Task 6 Nearest Level Linear Pixel Filtering">
