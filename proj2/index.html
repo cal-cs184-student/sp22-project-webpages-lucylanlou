@@ -1,7 +1,357 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 2 here
-	</body>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS184 Rasterizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Source+Code+Pro&display=swap" rel="stylesheet">
+</head>
+
+<style>
+    body {
+        font-family: 'Montserrat', sans-serif;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        line-height: 150%;
+        background-image: url("Img/Background.jpeg");
+        background-repeat: repeat;
+        margin: 0 auto;
+    }
+    
+    figure {
+        width: 100%;
+        margin: 0 auto;
+        margin-bottom: 100px;
+    }
+    
+    img {
+        max-width: 80%;
+        min-width: 150px;
+    }
+    
+    p {}
+    
+    .wrapper {
+        width: 80%;
+        max-width: 700px;
+        padding: 75px 100px 50px 100px;
+        background-color: white;
+    }
+    
+    .img-grid {
+        width: 100%;
+        margin-top: 100px;
+        display: flex;
+        justify-content: space-between;
+        /* flex-wrap: wrap; */
+    }
+    
+    figcaption {
+        font-size: small;
+    }
+    
+    .code {
+        font-family: 'Source Code Pro', monospace;
+    }
+</style>
+
+<body>
+    <div class="wrapper">
+        <h1>CS184 Project 2: MeshEdit</h1>
+        <h4>By Lucy Lou and Iman Kahssay</h4>
+        <br>
+        <h2>Overview</h2>
+        <p>In this project, we
+
+        </p>
+        <br>
+        <h2>Task 1: Bezier curves with 1D de Casteljau subdivision</h2>
+        <p>De Casteljau’s algorithm recursively subdivides by <span class="code">t</span> between two points, so that if we started with <span class="code">p</span> points, we next have <span class="code">p-1</span>, then <span class="code">p-2</span>, and
+            so on till we have 1 point which the bezier curve lies on. We implemented it by looping through the <span class="code">p</span> points and using linear interpolation of the point before it and the current point to find the point of the next
+            subdivision level. In this implemented function, <span class="code">evaluateStep()</span>, we are only performing one step of the algorithm (or one level of subdivision), so that it always returns <span class="code">p-1</span> points.
+        </p>
+        <p>Here is an example of the steps to create a Bezier curve with 6 control points. At each step, we create a new point in the middle of 2 points because our default p is 0.5. It takes 5 steps to reach the evaluation point at which the curve is drawn
+            through.
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task1-step0.png" alt="Task 1 Sample Rate 1 Triangles">
+                <figcaption>Step 0</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task1-step1.png" alt="Task 1 Sample Rate 1 Triangles">
+                <figcaption>Step 1</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task1-step2.png" alt="Task 1 Sample Rate 1 Triangles">
+                <figcaption>Step 2</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task1-step3.png" alt="Task 1 Sample Rate 1 Triangles">
+                <figcaption>Step 3</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task1-step4.png" alt="Task 1 Sample Rate 1 Triangles">
+                <figcaption>Step 4</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task1-step5.png" alt="Task 1 Sample Rate 1 Triangles">
+                <figcaption>Step 5</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task1-curve.png" alt="Task 2 Sample Rate 1 Triangles">
+                <figcaption>Bezier Curve</figcaption>
+            </figure>
+        </div>
+        <p>Dragging the points around and scrolling to modify our <span class="code">t</span>, we can make a new very different looking curve.
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task1-ModifiedT.png" alt="Task 2 Sample Rate 1 Triangles">
+                <figcaption>Modified Bezier Curve</figcaption>
+            </figure>
+        </div>
+
+        <h2>Task 2: Bezier surfaces with separable 1D de Casteljau</h2>
+        <p>In order to evaluate Bezier surfaces, we had to understand what the global variable <span class="code">controlPoints</span> represented. Since <span class="code">controlPoints</span> was a vector of vectors, it represented the vertical and horizontal
+            plane in the 3D space.
+
+        </p>
+        <p>Since Bezier surfaces have a horizontal and vertical plane, we had to use the de Casteljau’s algorithm to first find a point along the horizontal plane (using <span class="code">u</span> as our <span class="code">t</span> weighted value). By implementing
+            the <span class="code">evaluate1D()</span> function, where the input is a vector of points along one axis/plane in space, we used de Casteljau’s algorithm to recursively find one remaining point along that axis in which the bezier curve lies
+            on.
+
+        </p>
+        <p>For modifications in the rasterization pipeline, as stated above, we modified the sample buffer to account for the sample rate, added a double for loop within our rasterizing function in order to get to each subsample, and averaged the subsamples
+            to get our frame buffer.
+        </p>
+        <p>
+            Then, we implemented the <span class="code">evaluate()</span> function - where the input are two weighted values (<span class="code">u</span> and <span class="code">v</span>) along the horizontal and vertical axes. First, we calculated the
+            Bezier points along the horizontal plane, where we called <span class="code">evaluate1D()</span> and outputted one vector <span class="code">Vector3D</span> for each inner vector in <span class="code">controlPoints</span>. This in turn, left
+            <span class="code">controlPoints</span> as a vector of 3D points, where in lecture, it represents a “moving” Bezier cuve (that appears vertical). Then, we evaluated all the Bezier points produced along the vertical axis to calculate one surface
+            point. This was done by calling <span class="code">evaluate1D()</span> on the remaining points in <span class="code">controlPoints</span> (where in turn, it “evaluated” the points across the vertical axis), and outputted the 3D vertex that
+            corresponds to the Bezier surface point.
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task2.png" alt="Task 2 Bezier Surface Teapot">
+                <figcaption>Bezier Surface Teapot</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task2-gray.png" alt="Bezier Surface Teapot (Without Mesh)">
+                <figcaption>Bezier Surface Teapot (Without Mesh)</figcaption>
+            </figure>
+        </div>
+        <h2>Task 3: Area-weighted vertex normals</h2>
+        <p>Using the half edge iterator (a member variable in the Vertex class), we were able to iterate over all of the adjacent triangles in our mesh. While iterating through each (adjacent) triangle, we obtained each triangle’s three vertices and calculated
+            its corresponding line segments. Once we had the line segments, we were able to calculate the cross product in order to obtain the normal vectors, which would be weighted by the area. We then calculated the average sum of the area-weighted
+            normal vertices of all the triangles we traversed across, and returned its unit vector.
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task3-Before1.png" alt="Task 3 Before">
+                <figcaption>Before</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task3-Before2.png" alt="Task 3 Before Without Mesh">
+                <figcaption>Before (Without Mesh)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task3-After1.png" alt="After">
+                <figcaption>After</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task3-After2.png" alt="After Without Mesh">
+                <figcaption>After (Without Mesh)</figcaption>
+            </figure>
+        </div>
+        <h2>Task 4: Edge Flip</h2>
+        <p>
+            My partner and I drew out an example mesh and labeled all the vertices, halfedges, edges, and faces. We flipped the edge and took note of everything that would change. For our implementation, we started off with a boundary check, since flipping boundary
+            edges would result in errors. Next similar to our initial sketch, we stored all the vertices, halfedges, and faces as variables. We changed the halfedge pointers and next pointers to reflect the flip, updated face pointers, and then used the
+            function <span class="code">setNeighbors()</span> to reassign the <span class="code">next</span>, <span class="code">twin</span>, <span class="code">vertex</span>, <span class="code">edge</span>, and <span class="code">face</span>            of the original edge so that it would be flipped. Lastly, we made sure the face halfedges were pointing to the correct halfedges, and returned the pointer to the original edge that’s now been flipped.
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task4-BeforeUnsmooth1.png" alt="Before">
+                <figcaption>Before</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-Before1.png" alt="Before (Smooth)">
+                <figcaption>Before (Smooth)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-Before2.png" alt="Task 4 Before (No Mesh)">
+                <figcaption>Before (No Mesh)</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task4-AfterNotSmooth.png" alt="Task 4 After">
+                <figcaption>After Edge Flip</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-AfterSmooth.png" alt="Task 4 After (Smooth)">
+                <figcaption>After Edge Flip (Smooth)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-AfterNoMesh.png" alt="Task 4 After (No Mesh)">
+                <figcaption>After Edge Flip (No Mesh)</figcaption>
+            </figure>
+        </div>
+        <p>
+            Our debugging journey was hard because we ran into a bug that was causing the code to run forever, and even though when we ran the debugger, it would execute each line of code correctly. This ended up being because we assigned a wrong halfedge to a vertex.
+        </p>
+        <br>
+        <h2>Task 5: Edge Split</h2>
+        <p>
+            My partner and I approached this question similarly to Part 4, by drawing out an example of the mesh, labeling elements, and taking note of which pointers will need to be updated. We used a whiteboard and wrote out a pseudocode outline and checklist of
+            things to be changed. The beginning of the implementation was the same as task 3, saving the vertices, halfedges, and faces. A big difference between this task and the previous was that we needed to create a new vertex <span class="code">M</span>            at the center of the edge to be split, and create new halfedges, edges, and faces. We made sure to reuse elements instead of creating new ones when we could just change vertice and halfedge pointers. To keep track of what we still needed we
+            dealt with one halfedge at a time and went in a circle creating new elements when necessary and reassigning pointers. At the end, we set the new vertex <span class="code">M</span> and the new edges to be <span class="code">isNew</span> depending
+            on if they were and updated faces to be correct. We returned the halfedge assigned to <span class="code">M</span>.
+        </p>
+        <p>
+            Here is an examples of edge splits:
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task4-BeforeUnsmooth1.png" alt="Task 5 Before">
+                <figcaption>Before</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-Before1.png" alt="Task 5 Before (Smooth)">
+                <figcaption>Before (Smooth)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-Before2.png" alt="Task 5 Before (No Mesh)">
+                <figcaption>Before (No Mesh)</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task5-AfterSNotSmooth.png" alt="Task 4 After">
+                <figcaption>After Edge Split</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task5-AfterSSmooth.png" alt="Task 4 After (Smooth)">
+                <figcaption>After Edge Split (Smooth)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task5-AfterSNoMesh.png" alt="Task 4 After (No Mesh)">
+                <figcaption>After Edge Split (No Mesh)</figcaption>
+            </figure>
+        </div>
+        <p>
+            Here is an example of both edge flips and edge splits:
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task4-BeforeUnsmooth1.png" alt="Task 5 Before">
+                <figcaption>Before</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-Before1.png" alt="Task 5 Before (Smooth)">
+                <figcaption>Before (Smooth)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task4-Before2.png" alt="Task 5 Before (No Mesh)">
+                <figcaption>Before (No Mesh)</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task5-AfterSFNotSmooth.png" alt="Task 5 After">
+                <figcaption>After Edge Split and Flip</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task5-AfterSFSmooth.png" alt="Task 5 After (Smooth)">
+                <figcaption>After Edge Split and Flip (Smooth)</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task5-AfterSFNoMesh.png" alt="Task 5 After (No Mesh)">
+                <figcaption>After Edge Split and Flip (No Mesh)</figcaption>
+            </figure>
+        </div>
+        <p>One of the bugs we faced was when we split an edge on a triangle more than once, there was a black triangle. This represented a missing triangle in our mesh. We fixed it was re-examining the faces’s half edges.</p>
+        <br>
+        <h2>Task 6: Loop Subdivision for Mesh Upsampling</h2>
+        <p>In order to implement loop subdivision, we calculated all of the vertice’s new weighted average positions and new midpoint positions (for when the edges are to be splitted), then split all of the original edges in the mesh, flipped the new edges
+            that connect new vertices with old vertices, and then gave all of the vertices (both from the original mesh and from the new midpoints created when an edge splits) their calculated positions.
+        </p>
+        <p>This was done by first iterating through every vertex in the mesh, and calculating the sum of each vector’s neighbor’s original position. Then, we used the formula <span class="code">(1 - n * u) * original_position + u * original_neighbor_position_sum</span>,
+            where <span class="code">n</span> is the vertex degree, <span class="code">u</span> is the weighted constant, <span class="code">original_position</span> is the vertex’s current position, and <span class="code">original_neighbor_position_sum</span>            is the sum of all neighboring vector’s positions, in order to calculate each vector’s new position after the edges are split and flipped. Once we calculate the new positions for each (original) vector in the mesh, we then iterate through all
+            of the edges in the mesh in order to calculate the midpoint of the new vertices (that will be created when all of the edges are split) and save their positions in the edge’s property <span class="code">newPosition</span>. The formula used
+            to calculate the midpoint is the following: <span class="code">3/8 * (A + B) + 1/8 * (C + D)</span>, where A, B, C, and D are vertices of two triangles (shown in the “New Vertex” diagram in the spec).
+        </p>
+        <p>The reason why we calculate new weighted average positions for each vertex (new and old) is because we also want to smooth out the triangles in the mesh so that the object’s edges don’t look sharp, giving the object a more curved look.
+        </p>
+        <p>Lastly, when we have finished calculated all of the vertices’ positions, we split each edge in the original mesh, and flip the new edges (created after an edge is split) that connect old vertices to new vertices. This is done so that every triangle
+            is subdivided equally into 4 triangles. Once all of the triangles are subdivided (4 to1), all vertices’ positions are updated to have the calculated (weighted average) positions.
+        </p>
+        <p>Debugging for this function was tricky. In order for this to work, the <span class="code">flipedge()</span> and <span class="code">splitedge()</span> functions must work properly, and in order to debug whether the functions were working correctly,
+            we commented out specific portions of the code to see which functionality was not working correctly (either splitting or flipping the edges, or calculating and updating the vertices). First, we commented out the <span class="code">flipedge()</span>            function, and the portion of the code that updated the vertices' samples to see if <span class="code">splitedge()</span> was functioning correctly. Then, we uncommented the <span class="code">flipedge()</span> function to see if <span class="code">flipedge()</span>            function is working correctly. Lastly, to see if we updated or calculated the vertices in the mesh correctly, we uncommented the last portion of the code that updated vertices. To see if everything worked correctly, we rendered the image of
+            the cube and looked for any missing flaws (like spikes, dimples, or empty triangles).</p>
+        <p>Objects look smoother after the loop subdivision function is called on; the more the function is called on, the smoother the objects look. Also, the sharp corners and edges of the object (or mesh) look more round. Pre-splitting edges cannot reduce
+            the effect of rounded edges and corners in a mesh, but using the Catmull-Clark subdivision formulas to calculate vertices (new) positions along the sharp corners of a mesh can reduce this effect. </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task6-Before.png" alt="Task 6 Before Loop Subdivision">
+                <figcaption>Before Loop Subdivision</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task6-After.png" alt="Task 6 After 3 Iterations of Loop Subdivision">
+                <figcaption>After 3 Iterations of Loop Subdivision</figcaption>
+            </figure>
+        </div>
+        <p>Here's an example of 4 subdivisions with a cube:</p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task6-Cube0.png" alt="Task 6 Before Loop Subdivision">
+                <figcaption>Before Loop Subdivision</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task6-Cube1.png" alt="Task 6 After 1 Iterations of Loop Subdivision">
+                <figcaption>Iteration 1</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task6-Cube2.png" alt="Task 6 After 2 Iterations of Loop Subdivision">
+                <figcaption>Iteration 2</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task6-Cube3.png" alt="Task 6 After 3 Iterations of Loop Subdivision">
+                <figcaption>Iteration 3</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task6-Cube4.png" alt="Task 6 After 4 Iterations of Loop Subdivision">
+                <figcaption>Iteration 4</figcaption>
+            </figure>
+        </div>
+        <p>The cube was subdivided symmetrically when the edges were flipped and split first (before upsampling). This is because new edges and vertices were created in the splitting process, and the (new) triangles were flipped to conserve that square shape
+            in the mesh. So, with the increase of squares in the mesh, the upsampling smoothed the edges of the cube, but retained more of the square shape in (the center of) the mesh.</p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Task6-Cube1.png" alt="Task 6 Iteration 1 Not Preproccessed">
+                <figcaption>Iteration 1 Not Preproccessed</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Task6-CubeSymmetric.png" alt="Task 6 Iteration 1 Preproccessed">
+                <figcaption>Iteration 1 Preproccessed</figcaption>
+            </figure>
+        </div>
+        <p>
+            https://cal-cs184-student.github.io/sp22-project-webpages-lucylanlou/proj2/index.html
+        </p>
+    </div>
+</body>
+
 </html>
