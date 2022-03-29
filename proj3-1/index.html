@@ -67,21 +67,28 @@
         <h4>By Lucy Lou and Iman Kahssay</h4>
         <br>
         <h2>Overview</h2>
-        <p>In this project, we implemented elements of a pathtracing algorithm that uses ray tracing to render realistic .dae images. Ray tracing essentially is checking if a ray from a light source intersects a surface, and if it does, it affects how the
-            lights reflect off the surface in the image. In Part 1, we wrote functions for generating rays, generating pixel samples, and intersections between the rays with triangles and spheres. In Part 2, we sped up the checking of intersections by
-            constructing a Bounding Volume Hierarchy (BVH) which divided the primitives in bounding boxes, so we could check if a ray intersected a bounding box instead of each individual primitive. Part 3 and 4 dealt with rendering surfaces with lights
-            by direct and indirect illumination. Lastly, in Part 5, we used adaptive sampling to improve efficiency by only needing to sample at high rates at areas in the image that need that, and lower rates at areas where pixels converge quicker. At
-            the end of this project we were able to render high quality (2048 pixels per sample) images with realistic lighting and shading on bsdf diffusing surfaces.</p>
+        <p>In this project, we implemented elements of a pathtracing algorithm that uses ray tracing to render realistic ".dae" images. Ray tracing essentially is checking if a ray from a light source intersects with a surface, and if it does, it affects how the light reflects off the surface in the image.
+        </p>
+        <p> In part 1, we wrote functions for generating rays, generating pixel samples, and intersections between the rays with triangles and spheres.
+        
+        In part 2, we sped up the ray tracing algorithm by implementing the Bounding Volume Hierarchy (BVH) algorithm, which divides (or partitions) the primitives in a scene and stores them into seperate bounding boxes. This way, we can check if a ray intersected a bounding box instead of each individual primitive.
+        Part 3 and 4 dealt with rendering surfaces with lights by direct and indirect illumination.
+        <p> Lastly, in Part 5, we used adaptive sampling to improve sampling efficiency by only needing to sample at high rates in areas where pixels converge slowly, and sample at lower rates in areas where pixels converge quicker. At the end of this project we were able to render high quality (2048 pixels per sample) images with realistic lighting and shading on bsdf diffusing surfaces.</p>
         <br>
         <h2>Part 1: Ray Generation and Scene Intersection</h2>
-        <p>We want to generate a ray from the camera input to a given point on the image in world space. To do this, we transformed the given normalized coordinate from camera space to world space by scaling, translating, and rotating. We set the ray’s origin
-            as the camera’s position, direction as a normalized vector to the world space coordinate, <span class="code">max_t</span> and <span class="code">min_t</span> values at <span class="code">f_clip</span> and <span class="code">n_clip</span> respectively.
+        
+        <p> In the <span class="code">Camera::generate_ray(...)</span> function, we used the normalized image coordinates (given to us as the function’s argument) and returned a newly generated ray that is in the world space. In order to do this, we first transformd the normalized image coordinates <span class="code">(x,y)</span> to be in the camera space, created a ray in the camera space using the transformed image coordinates, and transformed the newly created ray to be in the world space.
         </p>
-        <p>We generate pixel samples by sampling multiple times on a pixel, calculating the scene radiance for each, and using the Monte Carlo estimate to find the value of the pixel.
+        
+        <p> In order to transform the normalized image coordinates, we scaled, translated, and rotated the image coordinates in order to directly correlate the image coordinates to its proper location in the camera’s sensor plane (in the camera space). We then transformed the newly calculated camera coodinates into the world space by using the matrix called <span class="code">"c2w"</span>. Next, we created a new ray object, where the ray’s origin was the camera’s position, direction was the normalized vector of the transformed coordinates (in world space), <span class="code">max_t</span> was the <span class="code">f_Clip</span>, <span class="code">min_t</span> value was the <span class="code">n_Clip</span>, and <span class="code">depth</span> was -1. Finally, we returned that newly generated ray.
         </p>
-        <p>Triangle intersection tests whether there is an intersection between a triangle and the input ray. We used the Moller Trumbore algorithm. The algorithm returns a vector with the t value, and 2 barycentric coordinate normal values. Using those
-            2 barycentric, we can calculate the third (alpha) by doing 1 - b1 - b2. Then we can do linear interpolation and calculate our surface normal, n.
+        
+        <p> In the <span class="code">PathTracer::raytrace_pixel(...)</span> function, we took pixel samples and implemented the Monte Carlo estimate in order to estimate the integral radiance over a pixel. In order to do this, we created a for loop (to implement the summation portion of the Monte Carlo estimator equation) that ran <span class="code">ns_aa</span> number of times. Within this for loop, we took a sample of the pixel, generated a ray (using the <span class="code">Camera::generate_ray(...)</span> function), calculated the estimated radiance (using the <span class="code">Camera::est_radiance_global_illumination(...)</span> function), and saved this value in a Vector3D variable called <span class="code">“sumRadiance”</span>. After that, we averaged the summed value, <span class="code">sumRadiance</span>, by dividing it with the number of samples taken (<span class="code">ns_aa</span>). Once we had the estimated/updated value of that pixel, we updated the corresponding pixel in the sample buffer by writing the statement: <span class="code">“sampleBuffer.update_pixel(avgRadiance, x, y)”</span>.
         </p>
+        
+        <p> The triangle intersection algorithm we implemented tests whether there is an intersection between a triangle primitive and a ray (given as an argument). We used the Moller Trumbore algorithm to calculate the time the ray intersects with the triangle and two of the barycentric coordinate normal values, b1 and b2, which corresponds to the beta and gamma values of the barycentric coordinates respectively. Using those two barycentric values, we can calculate the third (alpha) value by using the equation: 1 - b1 - b2. This is possible due to the fact that: alpha + beta + gamma = 1. Once we have the time and barycentric values, we can then use linear interpolation and calculate our surface normal, n.
+        </p>
+        
         <p>Here is an example of a small .dae image with normal shading:</p>
         <div class="img-grid">
             <figure>
@@ -95,13 +102,14 @@
         </div>
 
         <h2>Part 2: Bounding Volume Hierarchy</h2>
-        <p>Primitive ray intersections are very inefficient and we aren’t able to run larger files. Using a Bounding Volume Hierarchy tree greatly improves performance. Our BVH construction algorithm was a recursive function, where the BVH was constructed
-            as a binary tree. In this recursive function, we first computed the bounding box of a list of primitives and initialized a new BVH Node with that bounding box. Then, we checked if the node was a leaf by calculating the amount of primitives
-            in the list and checking if it was less than or equal to the <span class="code">max_leaf_size</span> of primitives. If the node was a leaf, we would set the node’s left and right iterators to <span class="code">null</span> (meaning the leaf
-            has no left or right branches), update the nodes start and end iterators, and return the node.
+        <p> Primitive-ray intersections are very inefficient and costly, making image rendering of large files very difficult and slow. Using a Bounding Volume Hierarchy tree greatly improves performance and rendering times.
+            
+            Our BVH construction algorithm is a recursive function, where the BVH's structure is a binary tree. In this recursive function, we first compute the bounding box of a list of primitives and initialize a new BVH Node with that bounding box. Then, we check if the node is a leaf by calculating the amount of primitives in the list and checking if it is less than or equal to the <span class="code">max_leaf_size</span> of primitives. If the node is a leaf, the node’s left and right iterators are set to <span class="code">null</span> (meaning the leaf has no left or right branches), node's start and end iterators are updated, and the node is returned.
         </p>
-        <p>If the node was not a leaf, then we would partition the node based on our split heuristic. The way we chose the splitting point was that we calculated which axis was the longest. Once we found the longest axis, we split by the middle primitive.
-            This prevented segfault errors. In order to get this middle primitive, we calculated the averaged position of all the primitives’ positions, and partitioned along the calculated averaged position. So, when the <span class="code">construct_bvh</span>            function was recursively called on, its iterators would change to represent the split point, and each would be saved to its corresponding left and right branch (i.e. the left branch was <span class="code">node->l = construct_bvh(start, split_point, max_leaf_size)</span>            and the right branch was <span class="code">node->r = construct_bvh(split_point, end, max_leaf_size)</span>).
+        
+        <p>If the node is not a leaf, then we partition the node based on our splitting heuristic. The way we chose the splitting point was by first calculating the which axis was the longest. Once we found the longest axis, we would split by the middle primitive.
+        
+            This prevented segfault errors. In order to get this middle primitive, we calculated the average position of all the primitives’ positions, and partitioned along the calculated averaged position. So, when the <span class="code">construct_bvh</span>            function was recursively called on, its iterators would change to represent the split point, and each would be saved to its corresponding left and right branch (i.e. the left branch was <span class="code">node->l = construct_bvh(start, split_point, max_leaf_size)</span>            and the right branch was <span class="code">node->r = construct_bvh(split_point, end, max_leaf_size)</span>).
         </p>
         <p>Here are some large dae images that would take an extremely long time to render without BVH acceleration:
         </p>
@@ -111,11 +119,11 @@
                 <figcaption>Normal Shading of CBLucy</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part2_Marx Plank.png" alt="Part 2 Normal Shading of Marx Plank">
-                <figcaption>Normal Shading of Marx Plank</figcaption>
+                <img src="Img/imans_images_for_writeup/maxplanck.png" alt="Part 2 Normal Shading of Max Plank">
+                <figcaption>Normal Shading of Max Plank</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part2_CBDragon.png" alt="Part 2 Normal Shading of CBDragon">
+                <img src="Img/imans_images_for_writeup/dragon.png" alt="Part 2 Normal Shading of CBDragon">
                 <figcaption>Normal Shading of CBDragon</figcaption>
             </figure>
         </div>
@@ -123,6 +131,30 @@
             Comparing and contrasting rendering times, it took around 20 seconds to render the cow.dae image (shown in part 1) without BVH acceleration, and 0.0675 seconds to render with the BVH acceleration. For the maxplanck.dae file (above), it took around 378
             seconds to render the image without BVH acceleration, and 0.0785 seconds to render with the BVH acceleration.This is a significant speed up, especially for larger files!
         </p>
+        
+        <div class="img-grid">
+            <figure>
+                <img src="Img/imans_images_for_writeup/cow_before_bvh.png" alt= "Part 2 'Cow.dae' Rendering Results Before BVH Acceleration">
+                <figcaption> 'Cow.dae' Rendering Results Before BVH Acceleration</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/imans_images_for_writeup/max_plank_before_bvh.png" alt="Part 2 'MaxPlank.dae' Rendering Results Before BVH Acceleration">
+                <figcaption>'MaxPlank.dae' Rendering Results Before BVH Acceleration</figcaption>
+            </figure>
+        </div>
+        
+        <div class="img-grid">
+            <figure>
+                <img src="Img/imans_images_for_writeup/cow_after_bvh.png" alt= "Part 2 'Cow.dae' Rendering Results After BVH Acceleration">
+                <figcaption> 'Cow.dae' Rendering Results After BVH Acceleration</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/imans_images_for_writeup/max_plank_after_bvh.png" alt="Part 2 'MaxPlank.dae' Rendering Results After BVH Acceleration">
+                <figcaption>'MaxPlank.dae' Rendering Results After BVH Acceleration</figcaption>
+            </figure>
+        </div>
+        
+        
         <br>
         <h2>Part 3: Direct Illumination</h2>
         <p>We implemented two versions of direct lighting estimation, one by sampling uniformly in a hemisphere to estimate direct lighting on a point and the other by sampling each light source. For uniform hemisphere sampling, we use a for loop to implement
@@ -142,7 +174,7 @@
         </p>
         <div class="img-grid">
             <figure>
-                <img src="Img/Part3_Hemisphere.png" alt="Part 3 Hemisphere Sampled CBBunny">
+                <img src="Img/imans_images_for_writeup/hemisphere_sampling_with_bunny.png" alt="Part 3 Hemisphere Sampled CBBunny">
                 <figcaption>Hemisphere Sampled CBBunny</figcaption>
             </figure>
             <figure>
@@ -189,11 +221,11 @@
                 <figcaption>Global Illumination m=2</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part4_CBSpheres.png" alt="Part 4 CBSpheres">
+                <img src="Img/imans_images_for_writeup/CBspheres.png" alt="Part 4 CBSpheres">
                 <figcaption>Global Illumination m=3</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part4_Blob.png" alt="Part 4 Blob">
+                <img src="Img/imans_images_for_writeup/blob.png" alt="Part 4 Blob">
                 <figcaption>Global Illumination m=5</figcaption>
             </figure>
         </div>
@@ -201,8 +233,8 @@
             Here are two Lambertian Sphere’s images, one rendered with only direct illumination and the other rendered with only indirect illumination: </p>
         <div class="img-grid">
             <figure>
-                <img src="Img/Part4_Direct.png" alt="Part 4 CBSpheres Only Direct Illumination">
-                <figcaption>Only Indirect Illumination</figcaption>
+                <img src="Img/imans_images_for_writeup/direct_sampling_spheres.png" alt="Part 4 CBSpheres Only Direct Illumination">
+                <figcaption>Only Direct Illumination</figcaption>
             </figure>
             <figure>
                 <img src="Img/Part4_Indirect.png" alt="Part 4 CBSpheres Only Indirect Illumination">
@@ -259,11 +291,11 @@
                 <figcaption>Sample Rate: 16</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part4_CBspheres-lambertian_64_4.png" alt="Part 4 CBSpheres s=64">
+                <img src="Img/imans_images_for_writeup/lambertian_spheres_64.png" alt="Part 4 CBSpheres s=64">
                 <figcaption>Sample Rate: 64</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part4_CBspheres-lambertian_1024_4.png" alt="Part 4 CBSpheres s=1024">
+                <img src="Img/imans_images_for_writeup/lambertian_spheres_1024.png" alt="Part 4 CBSpheres s=1024">
                 <figcaption>Sample Rate: 1024</figcaption>
             </figure>
         </div>
@@ -289,14 +321,24 @@
             </figure>
         </div>
         <h2>Partner Contributions</h2>
-        <p><strong>Lucy:</strong> Iman and I work great together! We are both really busy, but we try to make sure one of us makes it to an office hours if we are stuck. We worked together both in person and remotely, discussing Zoom because Iman got sick
+        <p><strong>Lucy:</strong> </p>
+        <p> Iman and I work great together! We are both really busy, but we try to make sure one of us makes it to office hours if we are stuck. We worked together both in-person and remotely, discussing Zoom because Iman got sick
             while we were working on this project. We also would sometimes work separately, but would always meet back together to merge our thoughts. We were able to solve a few tasks this way because each of us thought about a different aspect of the
             problem and were missing what the other had. This project was very frustrating and we ended up taking a break during spring break. We were stuck on Part 3, but after the break, I was refreshed and able to look at the project with new eyes
-            and quickly finish the rest! Yay!!!! Although this project was very challenging, I definitely understand pathtracing A LOT more than from lecture. This project solidified my knowledge on BVH acceleration and illumination in general. I also
+            and quickly finish the rest! Yay!!!! Although this project was very challenging, I definitely understand path-tracing A LOT more than from lecture. This project solidified my knowledge of BVH acceleration and illumination in general. I also
             found adaptive sampling very interesting.
         </p>
-        <p><strong>Iman:</strong>
+        
+        <p><strong>Iman:</strong> </p>
+        
+        <p>This project was by far the hardest project in this class. The concepts are easy to understand, but it was very hard to implement. Also, it was very difficult being able to debug the code; when an image is rendered weirdly, we would not be able to locate <b>where</b> in the code is our error and there were no test cases that could help us do so. So, we would get stuck and waste a <b><i>lot</i></b> of time trying to find the bug - it would even take us <b><i>days</i></b> to do so.
         </p>
+        <p> I’m so glad I had Lucy as my project partner because I think we complemented each other very well. In the areas that I didn’t understand, Lucy would understand, and vice versa. It felt really great being able to collaborate and bounce ideas off each other. There were also many times where I would have one part of the solution and Lucy would have the other. For example, I would implement code and generate an image that has a scene but a black image, and Lucy would have an image but a black scene. Once we went through our codes together and explained our thought processes, we would be able to find what the other missed. Also, I feel like we were very encouraging to one another. Whenever I couldn’t understand a concept, Lucy would always take her time to explain things to me, and wouldn’t make me feel belittled or dumb. Also, whenever one of us would get an image rendered correctly, we would cheer the other person on.
+        </p>
+        <p> In this project, I learned how we can implement the behavior of light, and how light bounces off (and interacts) with objects in the scene. I also learned a lot on how we can speed up the process of ray tracing in order to lessen the computational power (such as BVH, importance sampling, the Monte Carlo estimator, adaptive sampling, and more). It was very enlightening to understand how images are rendered, and how we can use physics and mathematics in order to implement something that occurs all the time in the real world.
+
+        </p>
+        
         <p>
             https://cal-cs184-student.github.io/sp22-project-webpages-lucylanlou/proj3-1/index.html
         </p>
