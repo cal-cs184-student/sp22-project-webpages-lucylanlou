@@ -65,7 +65,7 @@
     <div class="wrapper">
         <h1>CS184 Project 3-1: Pathtracer 1</h1>
         <h4>By Lucy Lou and Iman Kahssay</h4>
-        <br>
+        <br></br>
         <h2>Overview</h2>
         <p>In this project, we implemented elements of a pathtracing algorithm that uses ray tracing to render realistic ".dae" images. Ray tracing essentially is checking if a ray from a light source intersects with a surface, and if it does, it affects how the light reflects off the surface in the image.
         </p>
@@ -74,7 +74,7 @@
         In part 2, we sped up the ray tracing algorithm by implementing the Bounding Volume Hierarchy (BVH) algorithm, which divides (or partitions) the primitives in a scene and stores them into seperate bounding boxes. This way, we can check if a ray intersected a bounding box instead of each individual primitive.
         Part 3 and 4 dealt with rendering surfaces with lights by direct and indirect illumination.
         <p> Lastly, in Part 5, we used adaptive sampling to improve sampling efficiency by only needing to sample at high rates in areas where pixels converge slowly, and sample at lower rates in areas where pixels converge quicker. At the end of this project we were able to render high quality (2048 pixels per sample) images with realistic lighting and shading on bsdf diffusing surfaces.</p>
-        <br>
+        <br></br>
         <h2>Part 1: Ray Generation and Scene Intersection</h2>
         
         <p> In the <span class="code">Camera::generate_ray(...)</span> function, we used the normalized image coordinates (given to us as the function’s argument) and returned a newly generated ray that is in the world space. In order to do this, we first transformd the normalized image coordinates <span class="code">(x,y)</span> to be in the camera space, created a ray in the camera space using the transformed image coordinates, and transformed the newly created ray to be in the world space.
@@ -155,7 +155,7 @@
         </div>
         
         
-        <br>
+        <br></br>
         <h2>Part 3: Direct Illumination</h2>
         <p>We implemented two versions of direct lighting estimation, one by sampling uniformly in a hemisphere to estimate direct lighting on a point and the other by sampling each light source. For uniform hemisphere sampling, we use a for loop to implement
             the Monte carlo estimation formula, where it loops an <span class="code">num_samples</span> amount of times, and within the for loop, we uniformly sample an incoming ray direction (⍵i) from the hemisphere using the <span class="code">hemisphereSampler</span>            variable. Once we have the sampled direction, we create a ray where its origin is at <span class="code">hit_p</span> and its direction is the uniformly sampled incoming ray direction (⍵i). We then set the new ray’s <span class="code">min_t</span>            to a small constant, <span class="code">EPS_F</span> , in order to prevent numerical precision issues that causes the ray to intersect the surface it started from. After that, we check if this ray intersects with a light source (that is along
@@ -207,6 +207,8 @@
                 <figcaption>64 Light Rays</figcaption>
             </figure>
         </div>
+        
+        <br></br>
         <h2>Part 4: Global Illumination</h2>
         <p>
             Indirect lighting is lighting from surfaces that are not necessarily light sources. We initialize our ray with a depth of <span class="code">max_ray_depth</span>. We recursively call our indirect lighting function until the ray’s depth is
@@ -285,6 +287,7 @@
                 <figcaption>Sample Rate: 8</figcaption>
             </figure>
         </div>
+        
         <div class="img-grid">
             <figure>
                 <img src="Img/Part4_CBspheres-lambertian_16_4.png" alt="Part 4 CBSpheres s=16">
@@ -299,6 +302,8 @@
                 <figcaption>Sample Rate: 1024</figcaption>
             </figure>
         </div>
+        
+        <br></br>
         <h2>Task 5: Adaptive Sampling</h2>
         <p>Adaptive sampling is sampling a pixel as many times as it needs to converge. Some pixels need more samples to converge, others less. This allows us to not need to sample every pixel at high rates, only the ones that need to be to render faster
             without noise.
@@ -320,6 +325,8 @@
                 <figcaption>CBBunny Sample Rate Map</figcaption>
             </figure>
         </div>
+        
+        <br></br>
         <h2>Partner Contributions</h2>
         <p><strong>Lucy:</strong> </p>
         <p> Iman and I work great together! We are both really busy, but we try to make sure one of us makes it to office hours if we are stuck. We worked together both in-person and remotely, discussing Zoom because Iman got sick
@@ -339,11 +346,16 @@
 
         </p>
         
-     
+        <br></br>
         <h2>Web Page Link</h2>
         <p>
             https://cal-cs184-student.github.io/sp22-project-webpages-lucylanlou/proj3-1/index.html
         </p>
+
+        <p> <b> OR </b> </p>
+
+        <p> https://github.com/cal-cs184-student/sp22-project-webpages-lucylanlou/tree/master/proj3-1 </p>
+        
     </div>
 </body>
 
