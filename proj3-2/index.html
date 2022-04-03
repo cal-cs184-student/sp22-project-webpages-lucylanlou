@@ -1,7 +1,213 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS184 Pathtracer 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Source+Code+Pro&display=swap" rel="stylesheet">
+</head>
+
+<style>
+    body {
+        font-family: 'Montserrat', sans-serif;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        line-height: 150%;
+        background-image: url("Img/Background.jpeg");
+        background-repeat: repeat;
+        margin: 0 auto;
+    }
+    
+    figure {
+        width: 100%;
+        margin: 0 auto;
+        margin-bottom: 100px;
+    }
+    
+    img {
+        max-width: 80%;
+        min-width: 150px;
+    }
+    
+    p {}
+    
+    .wrapper {
+        width: 80%;
+        max-width: 700px;
+        padding: 75px 100px 50px 100px;
+        background-color: white;
+    }
+    
+    .img-grid {
+        width: 100%;
+        margin-top: 100px;
+        display: flex;
+        justify-content: space-between;
+        /* flex-wrap: wrap; */
+    }
+    
+    figcaption {
+        font-size: small;
+    }
+    
+    .code {
+        font-family: 'Source Code Pro', monospace;
+    }
+</style>
+
+<body>
+    <div class="wrapper">
+        <h1>CS184 Project 3-1: Pathtracer 1</h1>
+        <h4>By Lucy Lou and Iman Kahssay</h4>
+        <br></br>
+        <h2>Overview</h2>
+        <p>In the first part of this project, we implemented all the parts of basic raytracing, but only for ideal diffuse materials. In this part, we added the ability to render materials that reflect and refract like mirrors and glass by new material specific
+            <span class="code">bsdf.f_sample</span> functions. We also implemented the ability to render images with depth of field by simulating a thin lens, compared to before where everything was in focus with a pinhole camera model.
+        </p>
+        <br></br>
+        <h2>Part 1: Mirror and Glass Materials</h2>
+        <p>For rendering mirror material, we started by using the reflection equation to write a function that reflects our <span class="code">wi</span> ray. We called this function in <span class="code">MirrorBSDF::sample_f()</span>, while setting the pdf
+            to 1.0. Now we were able to render mirror surfaces like the dragon in CBdragon.dae:</p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part1_CBDragon_mirror.png" alt="Part 1 CBDragon, mirror surface">
+                <figcaption>CBDragon, mirror surface</figcaption>
+            </figure>
+        </div>
+        <p>Glass material reflects and refracts, so next we wrote the refraction function. We used Snell’s Law to achieve this on our <span class="code">wi</span> ray, and called that function in our <span class="code">RefractionBSDF::sample_f()</span> when
+            we had valid refraction (when we don’t have total internal reflection). </p>
+        <p>Now that we had both reflection and refraction implemented, we put them together in <span class="code">GlassBSDF::sample_f()</span>. In areas where total internal reflection occurs, we reflect. Otherwise, we used Schlick’s approximation and a
+            coinflip to decide whether to reflect or refract at a pixel. Here is the glass CBLucy!</p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part1_CBLucy_glass.png" alt="Part 1 CBLucy, glass surface">
+                <figcaption>CBLucy, glass surface</figcaption>
+            </figure>
+        </div>
+        <p> The scene CBspheres has two spheres, the one on the back left is a mirror material, the one in the front right is glass. Here are six renderings with <span class="code">max_ray_depth</span> set to 0, 1, 2, 3, 4, 5, and 100 sampled at 64 samples
+            per pixel and 4 samples per light.</p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_0.png" alt="Part 1 CBSpheres Max ray depth: 0">
+                <figcaption>Max ray depth: 0</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_1.png" alt="Part 1 CBSpheres Max ray depth: 1">
+                <figcaption>Max ray depth: 1</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_2.png" alt="Part 1 CBSpheres Max ray depth: 2">
+                <figcaption>Max ray depth: 2</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_3.png" alt="Part 1 CBSpheres Max ray depth: 3">
+                <figcaption>Max ray depth: 3</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_4.png" alt="Part 1 CBSpheres Max ray depth: 4">
+                <figcaption>Max ray depth: 4</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_5.png" alt="Part 1 CBSpheres Max ray depth: 5">
+                <figcaption>Max ray depth: 5</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part1_CBSpheres_64_4_100.png" alt="Part 1 CBSpheres Max ray depth: 100">
+                <figcaption>Max ray depth: 100</figcaption>
+            </figure>
+        </div>
+        <p>At <span class="code">max_ray_depth = 0</span>, the ray does not intersect with the scene, so the only thing we can see is the light at the light source. Then, at <span class="code">max_ray_depth = 1</span>, the ray bounces off the scene (and
+            objects within the scene) once, allowing us to see the scene (the colored walls) and two spherical objects’ shapes. At <span class="code">max_ray_depth = 2</span>, the ray bounces of the scene and its primitives twice, allowing us to see the
+            reflection of the ball in the front of the scene on the sphere in the back of the screen; giving the sphere in the back its mirror-like quality. Then, at <span class="code">max_ray_depth = 3</span>, we can trace more ray bounces and see more
+            of the scene reflected on the mirror-like sphere’s surface (that is at the back of the screen). Since the sphere at the front of the scene is a glass sphere, there is both reflection and refraction occurring, so the ray has to bounce a lot
+            of times in the sphere before it reaches our eyes. As the bounces increase, so does the glass sphere’s brightness, and we see less and less changes within the scene since the light’s energy decreases with each bounce.
+        </p>
+        <p>In the first couple of bounces, you can see that as the ray depth increases, so does the brightness of the scene. Also, as the ray depth increases, we are able to trace farther along the ray and capture more intersections the ray encounters within
+            the scene and its objects (i.e. capture more ray bounces). Since the sphere in the back is a mirror, you can intricately see the scene reflected across the surface of the sphere, and since the sphere in the front is a glass, you can see light
+            refract through it and land on the ground. Also note that the more bounces there are, the brighter the glass sphere gets (there are more rays “trapped” in the sphere).
+        </p>
+        <br><br>
+        <h2>Part 4: Depth of Field</h2>
+        <p>The previous model we had was a pinhole camera model, where everything is in focus since all the light rays of an object travels through a point in space (the “hole” in pinhole) and reflects an image of the object. However, in our new implementation,
+            we simulate a thin-lense camera model by uniformly sampling along our “lens” and having our camera ray refract through that point on the lens to our point in focus. There is no longer a point in space but a limited (aperture) radius where
+            objects are in focus only if they are within the radius and within the plane that is at focal distance from the lens. Everything out of these constraints are considered to be out of the lens’s depth of field, and creates a blurring effect.
+        </p>
+        <p>Here’s a “focus stack” on CBdragon.dae. The lens radius stays the same at 0.3 while the focal distance changes from 4.26 to 4.86. We can see that with a focal distance of 4.26, the whole image is blurry, but as we move to 4.46, the very front
+            of the dragon becomes focused. In 4.66, more of the dragon is in focus. By 4.86, the farther away parts of the dragon become focused, but the very front is now out of focus again.</p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part4.1_CBDragon_depth_of_field_lr_0.3_fd_4.26.png" alt="Part 4 CBDragon Focal Distance: 4.26">
+                <figcaption>Focal Distance: 4.26</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part4.1_CBDragon_depth_of_field_lr_0.3_fd_4.46.png" alt="Part 4 CBDragon Focal Distance: 4.46">
+                <figcaption>Focal Distance: 4.46</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part4.1_CBDragon_depth_of_field_lr_0.3_fd_4.66.png" alt="Part 4 CBDragon Focal Distance: 4.66">
+                <figcaption>Focal Distance: 4.66</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part4.1_CBDragon_depth_of_field_lr_0.3_fd_4.86.png" alt="Part 4 CBDragon Focal Distance: 4.86">
+                <figcaption>Focal Distance: 4.86</figcaption>
+            </figure>
+        </div>
+        <p>Now keeping the focal distance the same at 4.56, here is the same scene with four different aperture (lens radius) sizes, 0.1, 0.2, 0.4, and 1.23. The pinhole camera has a lens radius of 0, and as it gets bigger more of the scene refracts and
+            the image is less focused.
+        </p>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lf_0.4_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.4">
+                <figcaption>Lens Radius: 0.4</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lr_1.5_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 1.5">
+                <figcaption>Lens Radius: 1.5</figcaption>
+            </figure>
+        </div>
+        <div class="img-grid">
+            <figure>
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lf_0.4_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.4">
+                <figcaption>Lens Radius: 0.4</figcaption>
+            </figure>
+            <figure>
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lr_1.5_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 1.5">
+                <figcaption>Lens Radius: 1.5</figcaption>
+            </figure>
+        </div>
+        <h2>Partner Contributions</h2>
+        <p><strong>Iman:</strong> </p>
+
+        <p>This project was my favorite one so far. The workload was much more manageable, and I loved seeing the pictures come to life. I collaborated with Lucy again, and I really enjoy working with her. Our schedules were busy, but we were still able
+            to work on the project asynchronously and finish it. We always work in sync, where the parts that I find hard to finish, Lucy finds easy, and vice versa. I feel like we both encourage each other, and never make the other feel down or dumb.
+        </p>
+        <p> I learned a lot in this project. I learned more about how light behaves with mirror materials and glass materials, and have a much better understanding about lenses (whether that be from a human eye or a camera). I didn’t really understand how
+            our eyes naturally focus on an object and make the background blurry. Honestly, I wasn’t even sure what the word “aperture” meant until I went to the project party and have a staff member explain it to me. Now, after completing the project,
+            I am very confident in my understanding of the phenomena of focusing at one point and blurring the rest, and of the concept of depth of field.</p>
+        <p><strong>Lucy:</strong> </p>
+        <p> Like Iman, I also really enjoyed this project! I had one of the busiest weeks of my semester, with another CS class’s projects due and a job interview on the same day as this one, and my afternoons were spent officiating high school STUNT games,
+            but Iman and I were able to each squeeze in time to work on this project and finish!! We are really good at communicating to each other, and pushing our progress so the other can pick up. Iman started and finished the first task of part 1
+            and started on the second, but had a bug. The next day I found that bug and continued with the 3rd and 4th parts, but then had an issue with the 4th. Iman went to office hours and solved that. The next day I went to office hours and got the
+            entire Part 4 working, and Iman started on the write up. I finished the write up and converted it to html, and right after I finish this Iman will be looking it over and submitting! We’re a great team and working with Iman is so fun and productive!
+        </p>
+        <p>I thought this project was super cool and I learned tons. I love making “flashy” work and rendering glass is definitely one of them! I learned that with different sample_f functions we’re able to render different bsdf surfaces. I also learned
+            about the depth of field, which I have always wondered about, but now I’m very clear about it.</p>
+        <br></br>
+        <h2>Web Page Link</h2>
+        <p>
+            https://cal-cs184-student.github.io/sp22-project-webpages-lucylanlou/proj3-2/index.html
+        </p>
+    </div>
+</body>
+
 </html>
