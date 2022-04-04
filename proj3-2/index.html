@@ -72,8 +72,9 @@
         </p>
         <br></br>
         <h2>Part 1: Mirror and Glass Materials</h2>
-        <p>For rendering mirror material, we started by using the reflection equation to write a function that reflects our <span class="code">wi</span> ray. We called this function in <span class="code">MirrorBSDF::sample_f()</span>, while setting the pdf
-            to 1.0. Now we were able to render mirror surfaces like the dragon in CBdragon.dae:</p>
+        <p>For rendering mirror materials, we started by using the reflection equation to write a function that reflects our <span class="code">wo</span> ray about the normal <span class="code">(0, 0, 1)</span>, and stored the (reflected) result in our <span class="code">wi</span> ray. 
+            We then called this function in <span class="code">MirrorBSDF::sample_f()</span>, while setting the pdf
+            to 1.0. Once we finished implementing the <span class="code">BSDF::reflect()</span> and <span class="code">MirrorBSDF::sample_f()</span> functions correctly, we were able to render mirror surfaces like the dragon in CBdragon.dae:</p>
         <div class="img-grid">
             <figure>
                 <img src="Img/Part1_CBDragon_mirror.png" alt="Part 1 CBDragon, mirror surface">
@@ -162,22 +163,22 @@
                 <figcaption>Focal Distance: 4.86</figcaption>
             </figure>
         </div>
-        <p>Now keeping the focal distance the same at 4.56, here is the same scene with four different aperture (lens radius) sizes, 0.1, 0.2, 0.4, and 1.23. The pinhole camera has a lens radius of 0, and as it gets bigger more of the scene refracts and
+        <p>Now keeping the focal distance the same at 4.56, here is the same scene with four different aperture (lens radius) sizes, 0.1, 0.2, 0.4, and 1.5. The pinhole camera has a lens radius of 0, and as it gets bigger more of the scene refracts and
             the image is less focused.
         </p>
         <div class="img-grid">
             <figure>
-                <img src="Img/Part4.2_CBDragon_depth_of_field_lf_0.4_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.4">
-                <figcaption>Lens Radius: 0.4</figcaption>
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lr_0.1_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.1">
+                <figcaption>Lens Radius: 0.1</figcaption>
             </figure>
             <figure>
-                <img src="Img/Part4.2_CBDragon_depth_of_field_lr_1.5_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 1.5">
-                <figcaption>Lens Radius: 1.5</figcaption>
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lr_0.2_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.2">
+                <figcaption>Lens Radius: 0.2</figcaption>
             </figure>
         </div>
         <div class="img-grid">
             <figure>
-                <img src="Img/Part4.2_CBDragon_depth_of_field_lf_0.4_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.4">
+                <img src="Img/Part4.2_CBDragon_depth_of_field_lr_0.4_fd_4.56.png" alt="Part 4 CBDragon Lens Radius: 0.4">
                 <figcaption>Lens Radius: 0.4</figcaption>
             </figure>
             <figure>
