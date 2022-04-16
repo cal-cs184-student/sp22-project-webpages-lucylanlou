@@ -67,8 +67,8 @@
         <h4>By Lucy Lou and Iman Kahssay</h4>
         <br></br>
         <h2>Overview</h2>
-        <p>In this project, we implemented data structures and physics functions to simulate a cloth’s movement. In the first part, we built our grid of masses and springs that represent the cloth. In part 2, we integrated forces such as gravity into our
-            implementation, so the cloth would accurately fall and hang from pinned points. In part 3, we dealt with the cloth making collisions with other objects and planes, and in part 4, we handled self collisions. In the last part, we wrote shader
+        <p>In this project, we implemented data structures and physics functions to simulate a cloth’s movement. In the first part, we built our grid of masses and springs that represent the cloth. In part 2, we integrated forces (such as gravity) into our
+            implementation, so the cloth would accurately fall and hang from pinned points. In part 3, we dealt with the cloth making collisions with other objects and planes, and in part 4, we handled self-collisions. In the last part, we wrote shader
             programs to render different surfaces with lighting and textures.</p>
         <br></br>
         <h2>Part 1: Masses and Springs</h2>
@@ -101,10 +101,10 @@
             </figure>
         </div>
         <h2>Part 2: Simulation via Numerical Integration</h2>
-        <p>To add realistic physics to our cloth, we calculated forces for each point mass from external and spring accelerations. Then we used Verlet integration to calculate the position the point mass would move to based on its force. Lastly, we made
-            sure the springs wouldn’t get too deformed in the process, by fixing springs whose point masses were stretched more than 10% of their rest length.
+        <p> To make our cloth look and behave more realistically, we implemented physical equations of motion onto the cloth from one time step to the next. We did this by calculating forces for each point mass using external and spring accelerations. Then we used Verlet integration to calculate the position the point mass would move to based on its force. Lastly, we made
+            sure that the springs don't get too deformed in the process by fixing springs whose point masses were stretched more than 10% of their rest length.
         </p>
-        <p>We are now able to render a cloth pinned at positions and falling realistically with gravity and other forces. We can adjust settings such as the spring constant ks, density of the point masses, and damping (simulates friction).
+        <p>After implementing everything we explained above, we were able to render a cloth pinned at specifiic positions (at the top of the cloth), and falling realistically (due to gravity and other forces). We can adjust settings such as the spring constant ks, density of the point masses, and damping (simulates friction).
         </p>
         <p>Here are some examples of a cloth pinned at 2 points with different spring constants, ks = 500N/m, 5000N/m, and 50000N/m. As the spring constant decreases, the cloth is less ‘bouncy” and sags more. As fs increases, the cloth retains its shape
             better, as if the fabric is less stretchy.</p>
@@ -122,8 +122,8 @@
                 <figcaption>ks: 50000N/m</figcaption>
             </figure>
         </div>
-        <p>Here we change the density of the cloth with density=1g/cm^2, 15g/cm^2, and 30g/cm^2. The smaller the density, the less the cloth sags, which makes sense as tow density would mean the cloth is “lighter.” When density is adjusted to be larger,
-            the cloth sags as it is heavier.</p>
+        <p> Here we change the density of the cloth, where it's densities are 1g/cm^2, 15g/cm^2, and 30g/cm^2 respectively. The smaller the density, the less the cloth sags - which makes sense as low density would mean the cloth is “lighter.” When density is adjusted to be larger,
+            the cloth sags, since it is heavier.</p>
         <div class="img-grid">
             <figure>
                 <img src="Img/Part2_Density1Cloth2.png" alt="Part 2 Density: 1g/cm^2">
@@ -162,9 +162,9 @@
             </figure>
         </div>
         <h2>Part 3: Handling Collisions with Other Objects</h2>
-        <p>To implement collisions of the cloth with other surfaces, we first check if a point mass has intersected the plane, and if it has we use a correction vector on the point mass’s last position to set the current position to right above the surface.
+        <p>To implement collisions of the cloth with other surfaces, we first check if a point mass has intersected with or is within the surface of an object (in our case, it is either a sphere or plane). If the cloth has intersected with (or is within) the surface of the object, we create a correction vector on the point mass’s last position to set (or "bump") the current position right above the surface.
         </p>
-        <p>Here are images of our cloth draped over a sphere with different spring constants, ks = 500, 5000, and 50,000. The smaller spring constant resulted in more folds of the cloth and the bigger, less folds.
+        <p>Here are images of our cloth draped over a sphere with different spring constants, ks = 500, 5000, and 50,000. The smaller the spring constant, the more folds there are on the cloth, and the larger the spring constant, the less folds there are on the cloth.
         </p>
         <div class="img-grid">
             <figure>
@@ -192,8 +192,9 @@
             </figure>
         </div>
         <h2>Part 4: Handling Self-Collisions</h2>
-        <p>To deal with self collision, we hashed point masses into 3D boxes to speed up run time. With this implementation, instead of having to check if each point mass collides with every other point mass, we just have to check with the point masses who
-            are also in its 3D hash box. We determine if 2 point masses have collided if they are closer than a certain small distance apart. If so, we adjust with correction vectors.</p>
+        <p>To deal with self-collisions, we partitioned point masses into 3D boxe volumes, and hashed each point mass's location to uniquely map it to a float that represents its specific 3D box volume. This is called spatial hashing, and it speeds up the behavior of self-collisions in run time. With this implementation, instead of having to check if each point mass collides with every other point mass, we just have to check with the point masses who
+            are also in its 3D hash box. We determine whether 2 point masses have collided if they are closer than a certain distance apart (i.e. if they are within 2 * thickness distance apart). If so, we adjust the colliding point masses  with correction vectors.
+            </p>
         <p>Here are screenshots of a cloth collapsing on itself:</p>
         <div class="img-grid">
             <figure>
