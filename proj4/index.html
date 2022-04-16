@@ -192,7 +192,7 @@
             </figure>
         </div>
         <h2>Part 4: Handling Self-Collisions</h2>
-        <p>To deal with self-collisions, we partitioned point masses into 3D boxe volumes, and hashed each point mass's location to uniquely map it to a float that represents its specific 3D box volume. This is called spatial hashing, and it speeds up the behavior of self-collisions in run time. With this implementation, instead of having to check if each point mass collides with every other point mass, we just have to check with the point masses who
+        <p>To deal with self-collisions, we partitioned point masses into 3D box volumes, and hashed each point mass's location to uniquely map it to a float that represents its specific 3D box volume. This is called spatial hashing, and it speeds up the behavior of self-collisions in run time. With this implementation, instead of having to check if each point mass collides with every other point mass, we just have to check with the point masses who
             are also in its 3D hash box. We determine whether 2 point masses have collided if they are closer than a certain distance apart (i.e. if they are within 2 * thickness distance apart). If so, we adjust the colliding point masses  with correction vectors.
             </p>
         <p>Here are screenshots of a cloth collapsing on itself:</p>
